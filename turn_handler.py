@@ -75,6 +75,7 @@ def get_center(rect, other_rect):
     y = rect.height // 2 - other_rect.height // 2
 
     return x, y
+
 def main():
     screen = pygame.display.set_mode(SIZE.size)
     clock = pygame.time.Clock()
