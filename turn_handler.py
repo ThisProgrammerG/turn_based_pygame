@@ -55,6 +55,7 @@ class TurnHandler:
     def _next_player(self):
         try:
             self.current_player = self.players[self.player_index]
+            self.current_player.turn_started()
             self.player_index += 1
         except IndexError:
             pygame.event.post(pygame.event.Event(ROUND_OVER))
