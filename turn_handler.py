@@ -1,17 +1,20 @@
 import pygame
 
 
-SIZE = WIDTH, HEIGHT = 900, 500
-ROUND_OVER = pygame.event.custom_type()
-
 pygame.init()
 
+SIZE = pygame.Rect((0, 0), (900, 500))
+ROUND_OVER = pygame.event.custom_type()
+FONT = pygame.font.SysFont('Consolas', 24, bold=True)
+
 class Button:
-    def __init__(self, size, position, color):
+    def __init__(self, size, position, text, color):
         self.position = position
         self.image = pygame.Surface(size)
         self.image.fill(color)
         self.rect = self.image.get_rect(**{'center': position})
+        self.text = FONT.render(text, True, 'white')
+        self.image.blit(self.text, get_center(self.rect, self.text.get_rect()))
 
     def clicked(self, event):
         return self.rect.collidepoint(event.pos)
@@ -20,17 +23,15 @@ class Button:
         surface.blit(self.image, self.rect)
 
 class Actor:
-    def __init__(self, name, observer):
+    def __init__(self, name):
         self.name = name
         self.turn_over = True
-        self.observer = observer
 
     def turn_started(self):
         self.turn_over = False
 
     def turn_ended(self):
         self.turn_over = True
-        self.observer.turn_ended()
 
     def __repr__(self):
         return self.__str__()
@@ -65,27 +66,26 @@ class TurnHandler:
         self.players = players.copy()
         self._next_player()
 
-    def turn_ended(self):
+    def end_player_turn(self):
+        self.current_player.turn_ended()
         self._next_player()
 
-def get_center(rect):
-    x = WIDTH // 2 - rect.width // 2
-    y = HEIGHT // 2 - rect.height // 2
+def get_center(rect, other_rect):
+    x = rect.width // 2 - other_rect.width // 2
+    y = rect.height // 2 - other_rect.height // 2
 
     return x, y
-
 def main():
-    screen = pygame.display.set_mode(SIZE)
+    screen = pygame.display.set_mode(SIZE.size)
     clock = pygame.time.Clock()
     running = True
 
     turn_handler = TurnHandler()
-    players = [Actor('Player1', turn_handler), Actor('Bot', turn_handler), Actor('Dealer', turn_handler)]
+    players = [Actor('Player1'), Actor('Bot'), Actor('Dealer')]
     turn_handler.set_players(players)
 
-    font = pygame.font.SysFont('Consolas', 24, bold=True)
-    next_player_button = Button((100, 100), (WIDTH // 2, 400), 'orange')
-    new_round_button = Button((100, 100), (WIDTH - 100, 400), 'green')
+    next_player_button = Button((200, 100), (SIZE.width // 2, 400), 'Next Player', 'purple')
+    new_round_button = Button((200, 100), (SIZE.width - 200, 400), 'New Round', 'darkgreen')
 
     while running:
         clock.tick(60)
@@ -96,18 +96,18 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if next_player_button.clicked(event):
-                    turn_handler.current_player.turn_ended()
+                    turn_handler.end_player_turn()
                 elif new_round_button.clicked(event):
                     turn_handler.reset()
             elif event.type == ROUND_OVER:
                 turn_handler.round_over = True
 
         if turn_handler.round_over:
-            text = font.render(f'Round Over.', True, 'red')
-            screen.blit(text, get_center(text.get_rect()))
+            text = FONT.render(f'Round Over.', True, 'red')
+            screen.blit(text, get_center(SIZE, text.get_rect()))
         else:
-            text = font.render(f'In play: {turn_handler.current_player.name}', True, 'purple')
-            screen.blit(text, get_center(text.get_rect()))
+            text = FONT.render(f'In play: {turn_handler.current_player.name}', True, 'purple')
+            screen.blit(text, get_center(SIZE, text.get_rect()))
 
         new_round_button.render(screen)
         next_player_button.render(screen)
