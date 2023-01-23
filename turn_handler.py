@@ -41,7 +41,6 @@ class Actor:
 
 class TurnHandler:
     def __init__(self):
-        self._players = None
         self.players = None
         self.current_player = None
         self.round_over = False
@@ -50,7 +49,6 @@ class TurnHandler:
     def reset(self):
         self.round_over = False
         self.player_index = 0
-        self.players = self._players.copy()
         self._next_player()
 
     def _next_player(self):
@@ -62,7 +60,6 @@ class TurnHandler:
             pygame.event.post(pygame.event.Event(ROUND_OVER))
 
     def set_players(self, players):
-        self._players = players.copy()
         self.players = players.copy()
         self._next_player()
 
